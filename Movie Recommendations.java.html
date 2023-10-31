@@ -1,0 +1,174 @@
+<html>
+<head>
+<title>Main.java</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #0033b3;}
+.s1 { color: #080808;}
+.s2 { color: #8c8c8c; font-style: italic;}
+.s3 { color: #1750eb;}
+.s4 { color: #067d17;}
+.s5 { color: #0037a6;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Main.java</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">java.util.Scanner;</span>
+<span class="s0">import </span><span class="s1">java.util.Map;</span>
+<span class="s0">import </span><span class="s1">java.util.HashMap;</span>
+
+<span class="s0">public class </span><span class="s1">Main {</span>
+
+    <span class="s2">//Creating the hashmap</span>
+    <span class="s0">public </span><span class="s1">Map&lt;String,Map&lt;String,Double&gt;&gt; ratings;</span>
+
+    <span class="s0">public </span><span class="s1">Main() {</span>
+        <span class="s1">ratings = </span><span class="s0">new </span><span class="s1">HashMap&lt;&gt;();</span>
+    <span class="s1">}</span>
+
+    <span class="s2">//Adding a user to the hashmap dataset</span>
+    <span class="s0">public void </span><span class="s1">addRating (String user, String item, </span><span class="s0">double </span><span class="s1">rating){</span>
+        <span class="s1">ratings.putIfAbsent(user,</span><span class="s0">new </span><span class="s1">HashMap&lt;&gt;());</span>
+        <span class="s1">ratings.get(user).put(item,rating);</span>
+    <span class="s1">}</span>
+
+    <span class="s2">//Calculating the pearson similarity between two users</span>
+    <span class="s0">public double </span><span class="s1">calculatePearsonSimilarity(String user1, String user2){</span>
+        <span class="s1">Map&lt;String,Double&gt; set1 = ratings.get(user1);</span>
+        <span class="s1">Map&lt;String,Double&gt; set2 = ratings.get(user2);</span>
+
+        <span class="s2">//Check if users are the same</span>
+        <span class="s0">if </span><span class="s1">(user1.equals(user2)){</span>
+            <span class="s0">return </span><span class="s3">1.0</span><span class="s1">; </span><span class="s2">//Same person = exact similarity</span>
+        <span class="s1">}</span>
+
+        <span class="s2">//Check if users and ratings are in the dataset</span>
+        <span class="s0">if </span><span class="s1">(set1.isEmpty()||set2.isEmpty()||set1 == </span><span class="s0">null</span><span class="s1">||set2 == </span><span class="s0">null</span><span class="s1">){</span>
+            <span class="s0">return </span><span class="s3">0.0</span><span class="s1">; </span><span class="s2">//No similarity if there is no data to compare</span>
+        <span class="s1">}</span>
+
+        <span class="s0">double </span><span class="s1">sumX = </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s0">double </span><span class="s1">sumY = </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s0">double </span><span class="s1">sumXY = </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s0">double </span><span class="s1">sumXsqrd = </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s0">double </span><span class="s1">sumYsqrd = </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s0">int </span><span class="s1">commonItems = </span><span class="s3">0</span><span class="s1">;</span>
+
+        <span class="s2">//iterate throught the dataset and collect necessary information</span>
+        <span class="s0">for </span><span class="s1">(String item : set1.keySet()) {</span>
+            <span class="s0">if </span><span class="s1">(set2.containsKey(item)) {</span>
+                <span class="s0">double </span><span class="s1">rating1 = set1.get(item);</span>
+                <span class="s0">double </span><span class="s1">rating2 = set2.get(item);</span>
+                <span class="s1">sumX += rating1;</span>
+                <span class="s1">sumY += rating2;</span>
+                <span class="s1">sumXY += rating1 * rating2;</span>
+                <span class="s1">sumXsqrd += rating1 * rating1;</span>
+                <span class="s1">sumYsqrd += rating2 * rating2;</span>
+                <span class="s1">commonItems++;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span>
+
+        <span class="s0">if</span><span class="s1">(commonItems==</span><span class="s3">0</span><span class="s1">){</span>
+            <span class="s0">return </span><span class="s3">0.0</span><span class="s1">; </span><span class="s2">// No common items to compare</span>
+        <span class="s1">}</span>
+
+        <span class="s0">double </span><span class="s1">denom = Math.sqrt(sumXsqrd - (sumXsqrd/commonItems))*Math.sqrt(sumYsqrd - (sumYsqrd/commonItems));</span>
+
+        <span class="s0">if </span><span class="s1">(denom == </span><span class="s3">0.0</span><span class="s1">){</span>
+            <span class="s0">return </span><span class="s3">0.0</span><span class="s1">; </span><span class="s2">// Can't divide by zero</span>
+        <span class="s1">}</span>
+
+        <span class="s2">//calculate the pearson similarity</span>
+        <span class="s0">double </span><span class="s1">similarity = (sumXY - (sumX *sumY/commonItems))/denom;</span>
+
+        <span class="s0">return </span><span class="s1">similarity;</span>
+    <span class="s1">}</span>
+
+    <span class="s0">public double </span><span class="s1">predictedValue(String user, String item){</span>
+
+        <span class="s2">//Checking if the user exists in the dataset</span>
+        <span class="s0">if </span><span class="s1">(!ratings.containsKey(user)){</span>
+            <span class="s0">return </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s1">}</span>
+
+        <span class="s1">Map&lt;String, Double&gt; userRatings = ratings.get(user);</span>
+
+        <span class="s2">//Check if the user already rated a certain item</span>
+        <span class="s0">if</span><span class="s1">(userRatings.containsKey(item)){</span>
+            <span class="s0">return </span><span class="s1">userRatings.get(item);</span>
+        <span class="s1">}</span>
+
+        <span class="s0">double </span><span class="s1">predRating = </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s0">double </span><span class="s1">simSum = </span><span class="s3">0.0</span><span class="s1">;</span>
+
+        <span class="s0">for </span><span class="s1">(String otherUser : ratings.keySet()) {</span>
+            <span class="s0">if </span><span class="s1">(!otherUser.equals(user)) {</span>
+                <span class="s0">double </span><span class="s1">sim = calculatePearsonSimilarity(user, otherUser);</span>
+                <span class="s1">Map&lt;String, Double&gt; otherUserRatings = ratings.get(otherUser);</span>
+                <span class="s0">if </span><span class="s1">(otherUserRatings.containsKey(item)) {</span>
+                    <span class="s0">double </span><span class="s1">otherUserRating = otherUserRatings.get(item);</span>
+                    <span class="s1">predRating += sim * otherUserRating;</span>
+                    <span class="s1">simSum += sim;</span>
+                <span class="s1">}</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span>
+        <span class="s2">//Check if there were any similar users (can't divide by zero)</span>
+        <span class="s0">if </span><span class="s1">(simSum == </span><span class="s3">0</span><span class="s1">){</span>
+            <span class="s0">return </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s1">}</span>
+        <span class="s1">predRating /= simSum;</span>
+
+        <span class="s2">//Rating cannot be a negative number (just make it zero)</span>
+        <span class="s0">if </span><span class="s1">(predRating &lt;</span><span class="s3">0.0</span><span class="s1">){</span>
+            <span class="s1">predRating = </span><span class="s3">0.0</span><span class="s1">;</span>
+        <span class="s1">}</span>
+
+        <span class="s0">return </span><span class="s1">predRating;</span>
+
+    <span class="s1">}</span>
+
+    <span class="s0">public static void </span><span class="s1">main(String[] args) {</span>
+        <span class="s1">Main data = </span><span class="s0">new </span><span class="s1">Main();</span>
+        <span class="s1">Scanner sc = </span><span class="s0">new </span><span class="s1">Scanner(System.in);</span>
+
+        <span class="s1">System.out.println(</span><span class="s4">&quot;Enter the number of ratings in the system: &quot;</span><span class="s1">);</span>
+        <span class="s0">int </span><span class="s1">numRatings = sc.nextInt();</span>
+        <span class="s1">sc.nextLine();</span>
+
+        <span class="s2">//Collect all the data from the user</span>
+        <span class="s0">for </span><span class="s1">(</span><span class="s0">int </span><span class="s1">i = </span><span class="s3">0</span><span class="s1">; i&lt;numRatings; i++){</span>
+            <span class="s1">System.out.println(</span><span class="s4">&quot;Rating #&quot;</span><span class="s1">+(i+</span><span class="s3">1</span><span class="s1">));</span>
+
+            <span class="s1">System.out.println(</span><span class="s4">&quot;User: &quot;</span><span class="s1">);</span>
+            <span class="s1">String user = sc.nextLine();</span>
+
+            <span class="s1">System.out.println(</span><span class="s4">&quot;Item: &quot;</span><span class="s1">);</span>
+            <span class="s1">String item = sc.nextLine();</span>
+
+            <span class="s1">System.out.println(</span><span class="s4">&quot;Rating: &quot;</span><span class="s1">);</span>
+            <span class="s0">double </span><span class="s1">rating = sc.nextDouble();</span>
+            <span class="s1">sc.nextLine();</span>
+
+            <span class="s1">data.addRating(user,item,rating);</span>
+        <span class="s1">}</span>
+
+        <span class="s2">//Finding the predicted rating of a user</span>
+        <span class="s1">String user = </span><span class="s4">&quot;&quot;</span><span class="s1">;</span>
+        <span class="s1">String item = </span><span class="s4">&quot;&quot;</span><span class="s1">;</span>
+        <span class="s0">while </span><span class="s1">(!user.equals(</span><span class="s4">&quot;STOP&quot;</span><span class="s1">)&amp;&amp;!item.equals(</span><span class="s4">&quot;STOP&quot;</span><span class="s1">)) {</span>
+            <span class="s1">System.out.println(</span><span class="s4">&quot;Now we will calculate the predicted rating for a user (Type 'STOP' to stop)</span><span class="s5">\n</span><span class="s4">User: &quot;</span><span class="s1">);</span>
+            <span class="s1">user = sc.nextLine();</span>
+            <span class="s1">System.out.println(</span><span class="s4">&quot;Item: &quot;</span><span class="s1">);</span>
+            <span class="s1">item = sc.nextLine();</span>
+
+            <span class="s0">double </span><span class="s1">predictedRating = data.predictedValue(user, item);</span>
+            <span class="s1">System.out.println(</span><span class="s4">&quot;The predicted rating for user &quot; </span><span class="s1">+ user + </span><span class="s4">&quot; and item &quot; </span><span class="s1">+ item + </span><span class="s4">&quot; is: &quot; </span><span class="s1">+ predictedRating);</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span></pre>
+</body>
+</html>
